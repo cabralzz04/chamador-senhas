@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Painel de Senhas</title>
+  <style>
+    body { margin:0; font-family:sans-serif; background:#001; color:#fff; display:flex; flex-direction:column; height:100vh; }
+    header, footer { padding:20px; font-size:20px; display:flex; justify-content:space-between; }
+    main { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .atual { font-size:100px; font-weight:bold; margin-bottom:20px; }
+    .guiche { font-size:40px; margin-bottom:40px; }
+    .historico { width:80%; }
+    .historico h3 { margin:0 0 10px; }
+    .historico ul { list-style:none; padding:0; }
+    .historico li { font-size:24px; margin:5px 0; display:flex; justify-content:space-between; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>Chamador de Senhas</div>
+    <div id="clock">--:--</div>
+  </header>
+
+  <main>
+    <div class="atual" id="ticket">A-000</div>
+    <div class="guiche" id="desk">Guichê 1</div>
+    <div class="historico">
+      <h3>Últimas chamadas</h3>
+      <ul id="history"></ul>
+    </div>
+  </main>
+
+  <footer>
+    <div id="date">--/--/----</div>
+  </footer>
+
+  <script src="senha-common.js"></script>
+  <script>
+    function updateClock(){
+      const d=new Date();
+      document.getElementById("clock").textContent=d.toLocaleTimeString();
+      document.getElementById("date").textContent=d.toLocaleDateString();
+    }
+    setInterval(updateClock,1000); updateClock();
+
+    SenhaStore.subscribe(state=>{
+      document.getElementById("ticket").textContent = SenhaStore.formatTicket(state);
+      document.getElementById("desk").textContent = state.desk;
+      document.getElementById("history").innerHTML = (state.history||[]).slice(1).map(h=>
+        <li><span>${h.ticket}</span><span>${h.desk}</span></li>
+      ).join("");
+    });
+  </script>
+</body>
+</html>

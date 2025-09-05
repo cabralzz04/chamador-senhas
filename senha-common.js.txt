@@ -1,0 +1,65 @@
+// senha-common.js
+(() => {
+  const KEY = "senha_state_v2";
+  const DEFAULT_STATE = {
+    prefix: "A",
+    number: 0,
+    pad: 3,
+    desk: "Guichê 1",
+    history: []
+  };
+
+  const bc = ("BroadcastChannel" in window) ? new BroadcastChannel("senha_channel_v2") : null;
+
+  function getState() {
+    try {
+      return JSON.parse(localStorage.getItem(KEY)) || DEFAULT_STATE;
+    } catch {
+      return DEFAULT_STATE;
+    }
+  }
+
+  function setState(next) {
+    const state = { ...getState(), ...next };
+    localStorage.setItem(KEY, JSON.stringify(state));
+    if (bc) bc.postMessage(state);
+    return state;
+  }
+
+  function formatTicket({ prefix, number, pad }) {
+    return ${prefix}-${String(number).padStart(pad, "0")};
+  }
+
+  function nextTicket() {
+    const s = getState();
+    const newNumber = s.number + 1;
+    const newTicket = formatTicket({ prefix: s.prefix, number: newNumber, pad: s.pad });
+    const history = [{ ticket: newTicket, desk: s.desk, time: new Date().toLocaleTimeString() }, ...s.history].slice(0, 5);
+    return setState({ number: newNumber, history });
+  }
+
+  function recallLast() {
+    return setState(getState());
+  }
+
+  function callSpecific(n) {
+    const s = getState();
+    const newTicket = formatTicket({ prefix: s.prefix, number: n, pad: s.pad });
+    const history = [{ ticket: newTicket, desk: s.desk, time: new Date().toLocaleTimeString() }, ...s.history].slice(0, 5);
+    return setState({ number: n, history });
+  }
+
+  window.SenhaStore = {
+    getState,
+    setState,
+    nextTicket,
+    recallLast,
+    callSpecific,
+    formatTicket,
+    subscribe(handler) {
+      handler(getState());
+      if (bc) bc.onmessage = e => handler(e.data);
+      window.addEventListener("storage", e => { if (e.key === KEY) handler(JSON.parse(e.newValue)); });
+    }
+  };
+})();

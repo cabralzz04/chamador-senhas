@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Controle de Senhas</title>
+  <style>
+    body { font-family:sans-serif; background:#f0f0f0; padding:20px; }
+    h1 { margin-top:0; }
+    button { margin:5px; padding:10px 20px; font-size:18px; }
+    input { padding:5px; margin:5px; font-size:16px; }
+  </style>
+</head>
+<body>
+  <h1>Controle</h1>
+  <div>
+    <button onclick="SenhaStore.nextTicket()">Próxima Senha</button>
+    <button onclick="SenhaStore.recallLast()">Repetir Última</button>
+  </div>
+  <div>
+    Chamar senha específica: <input type="number" id="specNum">
+    <button onclick="SenhaStore.callSpecific(document.getElementById('specNum').value)">Chamar</button>
+  </div>
+  <hr>
+  <div>Senha atual: <span id="current">A-000</span></div>
+  <div>Guichê: <input id="desk" value="Guichê 1"></div>
+  <button onclick="SenhaStore.setState({desk:document.getElementById('desk').value})">Salvar Guichê</button>
+
+  <script src="senha-common.js"></script>
+  <script>
+    SenhaStore.subscribe(s=>{
+      document.getElementById("current").textContent = SenhaStore.formatTicket(s);
+      document.getElementById("desk").value = s.desk;
+    });
+  </script>
+</body>
